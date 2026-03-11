@@ -16,66 +16,63 @@ export const goodsFromServer = [
 ];
 
 enum SortType {
-  Default = 'none',
-  Alphabetical = 'alphabetical',
-  Length = 'length',
+  NONE,
+  ALPHABET,
+  LENGTH,
+}
+
+type ReorderOptions = {
+  sortType: SortType;
+  isReversed: boolean;
+};
+
+function getReorderedGoods(
+  goods: string[],
+  { sortType, isReversed }: ReorderOptions,
+) {
+  const visibleGoods = [...goods];
+
+  if (sortType === SortType.LENGTH) {
+    visibleGoods.sort((a, b) => a.length - b.length);
+  } else if (sortType === SortType.ALPHABET) {
+    visibleGoods.sort((a, b) => a.localeCompare(b));
+  }
+
+  if (isReversed) {
+    visibleGoods.reverse();
+  }
+
+  return visibleGoods;
 }
 
 export const App: React.FC = () => {
-  const [currentSort, setCurrentSort] = useState<SortType>(SortType.Default);
+  const [sortType, setSortType] = useState<SortType>(SortType.NONE);
   const [isReversed, setIsReversed] = useState(false);
 
-  // 1. Handler unificado para os botões de ordenação
-  const handleSort = (sortType: SortType) => {
-    if (currentSort === sortType) {
-      // Se já está ativo, inverte a ordem
-      setIsReversed(prev => !prev);
-    } else {
-      // Se é um novo tipo, define o tipo e reseta o reverse
-      setCurrentSort(sortType);
-      setIsReversed(false);
-    }
-  };
-
-  const getVisibleGoods = () => {
-    let result = [...goodsFromServer];
-
-    if (currentSort === SortType.Alphabetical) {
-      result.sort((a, b) => a.localeCompare(b));
-    } else if (currentSort === SortType.Length) {
-      result.sort((a, b) => a.length - b.length);
-    }
-
-    if (isReversed) {
-      result.reverse();
-    }
-
-    return result;
-  };
-
-  const visibleGoods = getVisibleGoods();
-  const isAnyFilterActive = currentSort !== SortType.Default || isReversed;
-
-  const handleReset = () => {
-    setCurrentSort(SortType.Default);
-    setIsReversed(false);
-  };
+  const visibleGoods = getReorderedGoods(goodsFromServer, {
+    sortType,
+    isReversed,
+  });
 
   return (
     <div className="section content">
       <div className="buttons">
         <button
           type="button"
-          className={`button is-info ${currentSort !== SortType.Alphabetical ? 'is-light' : ''}`}
-          onClick={() => handleSort(SortType.Alphabetical)}
+          className={`button is-info ${
+            sortType !== SortType.ALPHABET ? 'is-light' : ''
+          }`}
+          onClick={() => setSortType(SortType.ALPHABET)}
         >
           Sort alphabetically
         </button>
 
         <button
           type="button"
-          className={`button is-success ${currentSort !== SortType.Length ? 'is-light' : ''}`}
-          onClick={() => handleSort(SortType.Length)}
+          className={`button is-success ${
+            sortType !== SortType.LENGTH ? 'is-light' : ''
+          }`}
+          onClick={() => setSortType(SortType.LENGTH)}
         >
           Sort by length
         </button>
@@ -88,11 +85,14 @@ export const App: React.FC = () => {
           Reverse
         </button>
 
-        {isAnyFilterActive && (
+        {(sortType !== SortType.NONE || isReversed) && (
           <button
             type="button"
             className="button is-danger is-light"
-            onClick={handleReset}
+            onClick={() => {
+              setSortType(SortType.NONE);
+              setIsReversed(false);
+            }}
           >
             Reset
           </button>
