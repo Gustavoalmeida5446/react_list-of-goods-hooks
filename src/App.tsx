@@ -25,6 +25,18 @@ export const App: React.FC = () => {
   const [currentSort, setCurrentSort] = useState<SortType>(SortType.Default);
   const [isReversed, setIsReversed] = useState(false);
 
+  // 1. Handler unificado para os botões de ordenação
+  const handleSort = (sortType: SortType) => {
+    if (currentSort === sortType) {
+      // Se já está ativo, inverte a ordem
+      setIsReversed(prev => !prev);
+    } else {
+      // Se é um novo tipo, define o tipo e reseta o reverse
+      setCurrentSort(sortType);
+      setIsReversed(false);
+    }
+  };
+
   const getVisibleGoods = () => {
     let result = [...goodsFromServer];
 
@@ -55,7 +67,7 @@ export const App: React.FC = () => {
         <button
           type="button"
           className={`button is-info ${currentSort !== SortType.Alphabetical ? 'is-light' : ''}`}
-          onClick={() => setCurrentSort(SortType.Alphabetical)}
+          onClick={() => handleSort(SortType.Alphabetical)}
         >
           Sort alphabetically
         </button>
@@ -63,7 +75,7 @@ export const App: React.FC = () => {
         <button
           type="button"
           className={`button is-success ${currentSort !== SortType.Length ? 'is-light' : ''}`}
-          onClick={() => setCurrentSort(SortType.Length)}
+          onClick={() => handleSort(SortType.Length)}
         >
           Sort by length
         </button>
